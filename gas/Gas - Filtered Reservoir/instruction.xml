@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132436412924424278</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Filtered Reservoir</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># 1 Filters a specific gas from a waste tank,
+# stores it in a filtered tank
+#
+# 2 writes display data to the housing:
+# moles, temp, pressure OR an error code if the
+# filters need to be replaced.
+#
+# 3 you can write any number of display circuits
+# using the housing as an input to show this
+# information around your station.
+#
+# You could even set up an alarm when the filter
+# error appears, to let you know to go replace the
+# filters.
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# Waste tank
+# filtered tank
+# filter
+#
+# Modify line 49 to reflect correct Ratio !!!!!!!!!
+#
+# Mol/Temp/Pressure is written to db, so you can
+# hook up separate display circuits to view this
+# info remotely.
+#
+# displays an error code instead if the filter needs
+# to be replaced
+
+# === DEVICES ======================================
+alias dFilter d0
+alias dTank d1
+alias dWasteTank d2
+
+# === CONSTANTS ====================================
+define cPressureMax 25000
+define cZeroCInKelvin 272.15
+define cReplaceFilterErrorCode -9999
+
+# === GLOBALS ======================================
+alias rPressure r16
+alias rMoles r15
+alias rCelsius r14
+alias rRatio r13
+alias rFilterError r12
+
+# === PROGRAM ======================================
+bMainLoop:
+l rRatio dWasteTank RatioWater # User: Set this!!!!!
+l rFilterError dFilter Error
+l rPressure dTank Pressure
+l rMoles dTank Quantity
+
+l rCelsius dTank Temperature
+sub rCelsius rCelsius cZeroCInKelvin
+
+bltal rPressure cPressureMax bActivateFilter
+bgeal rPressure cPressureMax bDeactivateFilter
+bleal rRatio 0 bDeactivateFilter
+
+# Write notifications to db
+bgtal rFilterError 0 bReplaceFilterNotification
+bleal rFilterError 0 bGasInfoNotification
+sleep 3
+
+j bMainLoop
+
+# === BRANCHING ====================================
+bGasInfoNotification:
+s db Setting rPressure
+sleep 1
+s db Setting rCelsius
+sleep 1
+s db Setting rMoles
+j ra
+
+bReplaceFilterNotification:
+s db Setting cReplaceFilterErrorCode
+j ra
+
+bActivateFilter:
+s dFilter On 1
+j ra
+
+bDeactivateFilter:
+s dFilter On 0
+j ra</Instructions>
+</InstructionData>

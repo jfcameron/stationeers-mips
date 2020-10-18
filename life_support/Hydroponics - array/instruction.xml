@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132424437991582789</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Hydroponics - array</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Automated hydroponics ic
+# automatically plants and harvests any number
+# of automated hydroponics kits
+#
+# Note: If any hydroponic becomes empty, the whole
+# system will stall. You must guarantee all
+# hydroponics have work to do
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# BatchSlotReader 1:
+#   In: Auto Hydro
+#   Slot: Plant
+#   Var: Occupied
+#   Method: Maximum
+# BatchSlotReader 2:
+#   In: Auto Hydro
+#   Slot: Plant
+#   Var: Mature
+#   Method: Minimum
+# BatchWriter 1:
+#   In: IC Housing
+#   Out var: Plant
+#   Out type: Auto Hydro
+# BatchWriter 2:
+#   In: IC Housing
+#   Out var: Harvest
+#   Out type: Auto Hydro
+#
+# array of Automated Hydroponics kit
+# hook up gas and chutes
+
+# === DEVICES ======================================
+alias dBSROccupied d0
+alias dBSRMature d1
+alias dBWPlant d2
+alias dBWHarvest d3
+
+# === CONSTANTS ====================================
+# Required to prevent issues flipping writers on
+# and of too quickly
+define cBatchDelay 2
+
+# === GLOBALS ======================================
+alias rOccupied r15
+
+# === PROGRAM ======================================
+bMainLoop:
+sleep 14
+s dBWPlant On 0
+s dBWHarvest On 0
+
+# React to occupied
+s dBSROccupied On 1
+sleep cBatchDelay
+l rOccupied dBSROccupied Setting
+s dBSROccupied On 0
+
+beqal rOccupied 0 bPlant
+
+# React to mature
+s dBSRMature On 1
+sleep cBatchDelay
+l r0 dBSRMature Setting
+s dBSRMature On 0
+beqal r0 1 bHarvest
+
+yield
+j bMainLoop
+
+# === BRANCHING ====================================
+bPlant:
+s db Setting 1
+s dBWPlant On 1
+sleep cBatchDelay
+s db Setting 0
+sleep cBatchDelay
+s dBWPlant On 0
+j ra
+
+bHarvest:
+s db Setting 1
+s dBWHarvest On 1
+sleep cBatchDelay
+s db Setting 0
+sleep cBatchDelay
+s dBWHarvest On 0
+
+s dBSROccupied On 1
+sleep cBatchDelay
+l r0 dBSROccupied Setting
+s dBSROccupied On 0
+
+beq r0 0 ra
+sleep cBatchDelay
+j bHarvest</Instructions>
+</InstructionData>

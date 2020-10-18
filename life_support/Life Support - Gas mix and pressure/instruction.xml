@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132387071186728599</DateTime>
+  <GameVersion>0.2.2445.11152</GameVersion>
+  <Title>Life Support - Gas mix and pressure</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># === DESCRIPTION ==================================
+# Maintains a gas mixture suitable for plants and
+# one type of playable character:
+# if human, breathable intake should be O2 or O2 mix
+# if alien, pipe in H2 or H2 mix
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for the IC
+# Gas Sensor somewhere in the habitat
+# Active Vent for pulling CO2 in
+# Active Vent for pulling breathable mix in
+# Active Vent for pushing gas out (when pressure is
+# too high or the CO2 mix is unacceptable)
+# Optional:
+# Small Console for displaying state and CO2 mix
+
+# === DEVICE ALIASES ===============================
+alias dGasSensor d0 # Measures pressure and CO2%
+alias dC02Intake d1 # CO2 Input pipe
+alias dBreathableIntake d2 # O2 or O2/N2
+alias dGasOutput d3 # Waste pipe
+alias dDisplay d4 # CO2% &amp; program state display
+
+# === CONSTANTS ====================================
+# Feel free to modify these as needed
+define cTargetC02Low 0.40 # 0-1
+define cTargetC02High 0.60 # 0-1
+define cTargetPressureLow 90 #kpa
+define cTargetPressureHigh 105 #kpa
+
+# === GLOBALS ======================================
+alias rCO2Ratio r15
+alias rState r14
+alias rCO2On r13
+alias rO2On r12
+alias rWasteOutOn r11
+
+#=== PROGRAM =======================================
+MainLoop:
+s dC02Intake Mode 0 # pull gas from pipe
+s dBreathableIntake Mode 0 # pull gas from pipe
+s dBreathableIntake PressureExternal 106
+s dGasOutput Mode 1 # push gas into pipe
+s dGasOutput PressureExternal 106
+
+move rCO2On 0
+move rO2On 0
+move rWasteOutOn 0
+move rState 0
+
+# Handle gas mix
+l rCO2Ratio dGasSensor RatioCarbonDioxide
+
+bltal rCO2Ratio cTargetC02Low bDoCO2RatioTooLow
+bgtal rCO2Ratio cTargetC02High bDoCO2RatioTooHigh
+
+# Handle pressure
+alias rPressure r0
+l rPressure dGasSensor Pressure
+
+bltal rPressure cTargetPressureLow bDoPressureTooLow
+bgtal rPressure cTargetPressureHigh bDoKpaTooHigh
+
+s dC02Intake On rCO2On
+s dBreathableIntake On rO2On
+s dGasOutput On rWasteOutOn
+
+# Display ratio and pause
+move r0 rCO2Ratio
+move r1 1
+move r2 2
+jal fDisplayInfo
+
+# Display state and pause
+move r0 rState
+move r1 0
+move r2 6
+jal fDisplayInfo
+
+j MainLoop
+
+# === BRANCHING ====================================
+bDoCO2RatioTooLow:
+move rCO2On 1
+move rState 1
+j ra
+
+bDoCO2RatioTooHigh:
+move rO2On 1
+move rState 2
+j ra
+
+bDoPressureTooLow:
+move rCO2On 1
+move rO2On 1
+move rWasteOutOn 0
+move rState 3
+j ra
+
+bDoKpaTooHigh:
+move rCO2On 0
+move rO2On 0
+move rWasteOutOn 1
+move rState 4
+j ra
+
+# === FUNCTIONS ====================================
+fDisplayInfo: #0: data, 1: mode, 2: color
+brdns dDisplay 4 # skip if no display
+s dDisplay Color r2
+s dDisplay Mode r1
+s dDisplay Setting r0
+s db Setting r0
+sleep 1
+j ra</Instructions>
+</InstructionData>

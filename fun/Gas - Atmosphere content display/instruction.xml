@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132425050524356032</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Atmosphere content display</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># === DEVICES ======================================
+alias dGasDisplay d0
+alias dGasSensor d1
+
+# === PROGRAM ======================================
+MainLoop:
+s dGasDisplay On 1
+s dGasDisplay Mode 1
+
+s dGasDisplay Color 6
+l r0 dGasSensor RatioOxygen
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 1
+l r0 dGasSensor RatioCarbonDioxide
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 2
+l r0 dGasSensor RatioNitrogen
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 5
+l r0 dGasSensor RatioPollutant
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 4
+l r0 dGasSensor RatioVolatiles
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 0
+l r0 dGasSensor RatioWater
+s dGasDisplay Setting r0
+sleep 1
+
+s dGasDisplay Color 9
+l r0 dGasSensor RatioNitrousOxide
+s dGasDisplay Setting r0
+sleep 1
+
+j MainLoop</Instructions>
+</InstructionData>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132435631196974841</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Fun - Jukebox</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Jukebox IC
+# select from the 3 in game music tracks via dial,
+# turn 1-4 speakers on/off and
+# control control volume with a dial
+
+# === TRACK INFO ===================================
+# 0 = Ride Of the Valkyries, Richard Wagner
+# 1 - Flip-Flap, X-CEED of eNDZEIt &amp; aPPeNDIx
+# 2 - ZX/GB Robocop theme remix, Cboyardee
+
+# === BUILD INSTRUCTIONS ===========================
+# housing for the ic
+# 1 - 4 klaxton speakers
+# dial (switch kit) for Track Selector
+#   max is configured by this program
+# dial (switch kit) for Volume control &amp; On/Off
+#   max determines the # of increments in your
+#   volume control. typical values: 10 or 100
+#   0 turns speaker power off, else on
+
+# === CONFIG &amp; FUTURE PROOFING =====================
+# Currently (Aug 2020) there are only 3 music tracks
+# in game and 6 alarm tracks
+# if these change in the future, you will have to
+# modify the below CONSTANTS section to reflect
+# the changes.
+
+# === DEVICES ======================================
+alias dTrackDial d0 # Select music track
+alias dVolumeDial d1 # Control volume &amp; On/Off
+alias dSpeaker0 d2
+alias dSpeaker1 d3
+alias dSpeaker2 d4
+alias dSpeaker3 d5
+
+# === CONSTANTS ====================================
+define cOffsetToMusicTracks 7 #skip over alarms
+define cNumberOfMusicTracks 3
+
+define cSpeakerVolumeDivisor 100 # volume is % based
+
+# === PROGRAM ======================================
+sub r0 cNumberOfMusicTracks 1
+s dTrackDial Mode r0
+
+bMainLoop:
+alias pSpeaker dSpeaker0
+bdseal pSpeaker bDoSpeaker
+
+alias pSpeaker dSpeaker1
+bdseal pSpeaker bDoSpeaker
+
+alias pSpeaker dSpeaker2
+bdseal pSpeaker bDoSpeaker
+
+alias pSpeaker dSpeaker3
+bdseal pSpeaker bDoSpeaker
+
+yield
+j bMainLoop
+
+bDoSpeaker:
+push ra
+
+# Handle track selection
+l r0 dTrackDial Setting
+add r0 r0 cOffsetToMusicTracks
+s pSpeaker Mode r0
+
+# Load volume dial state
+l r0 dVolumeDial Setting
+l r1 dVolumeDial Mode
+
+# Turn speakers on/off if volume is set to 0 or not
+bleal r0 0 bTurnSpeakerOff
+bgtal r0 0 bTurnSpeakerOn
+
+# Apply volume dial values to the current speaker
+div r0 r0 r1
+mul r0 r0 cSpeakerVolumeDivisor
+s pSpeaker Volume r0
+
+pop ra
+j ra
+
+bTurnSpeakerOff:
+s pSpeaker On 0
+j ra
+
+bTurnSpeakerOn:
+s pSpeaker On 1
+j ra</Instructions>
+</InstructionData>

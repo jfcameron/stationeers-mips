@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132415764021476667</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Ice melter</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Melts ice using a furnace's "activate" function
+# This lets you melt ice at night on Mars, Moon,
+# even works on Europa
+
+# === BUILD INSTRUCTIONS ===========================
+# Furnace
+# Housing for IC
+# Connect Furnace out pipe to your gas system
+# Connect a bunch of chutes to the furnace
+# Ice will never melt in chutes, so chutes are a
+# safe way to queue work for the ice melter.
+
+# === DEVICES ======================================
+alias dFurnace d0
+
+# === PROGRAM ======================================
+bMainLoop:
+dFurnace Activate 1
+
+sleep 1
+j bMainLoop</Instructions>
+</InstructionData>

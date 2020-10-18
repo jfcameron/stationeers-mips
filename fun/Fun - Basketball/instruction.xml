@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132420896151050991</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Fun - Basketball</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Supports up to 5 Hoops
+# 1: Keeps hoops active
+# 2: Fixes score increment issue
+# 3: Provides a score reset button
+#
+# Basketball hoop is very limited in current build
+# (August 2020):
+# There is no power switch on the hoop and
+# there is a bug where whenever a hoop is scored,
+# score is incremented by 2.
+# This script fixes those issues.
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# 1-5 Basketball hoops
+# button (switch kit)
+
+# === DEVICES ======================================
+alias dResetBtn d0 # Resets score
+alias dHoop0 d1
+alias dHoop1 d2
+alias dHoop2 d3
+alias dHoop3 d4
+alias dHoop4 d5
+
+# === GLOBALS ======================================
+alias rLastScore0 r15
+alias rCurrentScore0 r14
+
+alias rLastScore1 r13
+alias rCurrentScore1 r12
+
+alias rLastScore2 r11
+alias rCurrentScore2 r10
+
+alias rLastScore3 r9
+alias rCurrentScore3 r8
+
+alias rLastScore4 r7
+alias rCurrentScore4 r6
+
+# === PROGRAM ======================================
+bInit:
+alias pHoop dHoop0
+alias rLastScore rLastScore0
+bdseal pHoop bInitHoop
+
+alias pHoop dHoop1
+alias rLastScore rLastScore1
+bdseal pHoop bInitHoop
+
+alias pHoop dHoop2
+alias rLastScore rLastScore2
+bdseal pHoop bInitHoop
+
+alias pHoop dHoop3
+alias rLastScore rLastScore3
+bdseal pHoop bInitHoop
+
+alias pHoop dHoop4
+alias rLastScore rLastScore4
+bdseal pHoop bInitHoop
+
+bMainLoop:
+alias pHoop dHoop0
+alias rLastScore rLastScore0
+alias rCurrentScore rCurrentScore0
+bdseal pHoop bDoHoop
+
+alias pHoop dHoop1
+alias rLastScore rLastScore1
+alias rCurrentScore rCurrentScore1
+bdseal pHoop bDoHoop
+
+alias pHoop dHoop2
+alias rLastScore rLastScore2
+alias rCurrentScore rCurrentScore2
+bdseal pHoop bDoHoop
+
+alias pHoop dHoop3
+alias rLastScore rLastScore3
+alias rCurrentScore rCurrentScore3
+bdseal pHoop bDoHoop
+
+alias pHoop dHoop4
+alias rLastScore rLastScore4
+alias rCurrentScore rCurrentScore4
+bdseal pHoop bDoHoop
+
+yield
+j bMainLoop
+
+bInitHoop:
+s pHoop On 1
+s pHoop Setting 1
+l rLastScore pHoop Setting
+j ra
+
+bDoHoop:
+push ra
+
+l r0 dResetBtn Setting
+beqal r0 1 bInit
+
+l rCurrentScore pHoop Setting
+bneal rCurrentScore rLastScore bScoreFix
+move rLastScore rCurrentScore
+l rLastScore pHoop Setting
+
+pop ra
+j ra
+
+bScoreFix:
+sub rCurrentScore rCurrentScore 1
+s pHoop Setting rCurrentScore
+j ra</Instructions>
+</InstructionData>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132423431704053919</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Display H2_Fuel_X</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Display logic for reservoir ICs by the same
+# author.
+# Allows you to see:
+# 1 Do filters need to be replaced?
+# 2 Temp/Pressure/Moles in filtered reservoirs
+#
+# Useful for viewing this data remotely, e.g from
+# inside a habitat, away from the gas system.
+
+# === BUILD INSTRUCTIONS ===========================
+# 1 - 3 displays, to display reservoir data
+# 1 -3 ICs running the Gas Reservoir program by
+# this author.
+# a housing for this IC
+
+# === DEVICES ======================================
+alias dVolatileIC d0
+alias dVolatileDisplay d1
+
+alias dFuelIC d2
+alias dFuelDisplay d3
+
+alias dPollutantIC d4
+alias dPollutantDisplay d5
+
+# === PROGRAM ======================================
+bMainLoop:
+brdns dVolatileIC 4
+l r0 dVolatileIC Setting
+s dVolatileDisplay Color 4 # red
+s dVolatileDisplay Setting r0
+
+brdns dFuelIC 4
+l r0 dFuelIC Setting
+s dFuelDisplay Color 3 # orange
+s dFuelDisplay Setting r0
+
+brdns dPollutantIC 4
+l r0 dPollutantIC Setting
+s dPollutantDisplay Color 7 # black
+s dPollutantDisplay Setting r0
+
+yield
+j bMainLoop</Instructions>
+</InstructionData>

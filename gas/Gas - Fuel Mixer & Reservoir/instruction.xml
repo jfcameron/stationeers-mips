@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132436416957683698</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Fuel Mixer &amp; Reservoir</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Fuel mixer/resevoir ic, meant to be integrated
+# into a larger gas system.
+#
+# Automatically maintains a resevoir of fuel,
+# mixing o2 and h2 as needed &amp; available
+#
+# Notification codes are written to the housing.
+# using this you can build separate display circuits
+# to get information on the mixer remotely (e.g:
+# from inside a habitat)
+#
+# Error Notifications: No O2, No H2
+# Info Notification: reservoir kpa, temp, moles
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for the IC
+# tank kit for fuel storage
+# tank kit for oxygen storage
+# tank kit for volatiles storage
+# gas mixer for mixing o2/h2 correctly
+#
+# Mixer must be set to 33% o2, 67% h2
+#
+# Before constructing, make sure your O2 and H2
+# are not hot enough to immediately combust upon
+# mixing, otherwise youll end up with a tank of
+# CO2 and pollutants
+
+# === DEVICES ======================================
+alias dFuelTank d0
+alias dOxygenTank d1
+alias dVolatilesTank d2
+alias dFuelMixer d3
+
+# === CONSTANTS ====================================
+define cFuelPressureTarget 4000
+define cInputKpaMin 1000
+
+define cLowOxygenError -9999
+define cLowVolatilesError -9998
+
+define cZeroCInKelvin 272.15
+
+# === GLOBALS ======================================
+alias rFuelPressure r15
+alias rFuelCelsius r14
+alias rFuelMoles r13
+alias rOxygenPressure r12
+alias rVolatilesPressure r11
+
+# === PROGRAM ======================================
+bMainLoop:
+# Gather data
+l rFuelPressure dFuelTank Pressure
+l rFuelCelsius dFuelTank Temperature
+l rFuelMoles dFuelTank Quantity
+
+l rOxygenPressure dOxygenTank Pressure
+l rVolatilesPressure dVolatilesTank Pressure
+
+# Do fuel mix logic
+bleal rFuelPressure cFuelPressureTarget bTryMixFuel
+bgtal rFuelPressure cFuelPressureTarget bStopMixFuel
+
+# Write notification data to housing
+blt rOxygenPressure cInputKpaMin bLowOxygenNoti
+blt rVolatilesPressure cInputKpaMin bLowVolatileNoti
+s db Setting rFuelPressure
+sleep 1
+s db Setting rFuelCelsius
+sleep 1
+s db Setting rFuelMoles
+sleep 3
+
+yield
+j bMainLoop
+
+# === BRANCHING ====================================
+bLowOxygenNoti:
+s db Setting cLowOxygenError
+j bMainLoop
+
+bLowVolatileNoti:
+s db Setting cLowVolatilesError
+j bMainLoop
+
+bTryMixFuel:
+blt rOxygenPressure cInputKpaMin bStopMixFuel
+blt rVolatilesPressure cInputKpaMin bStopMixFuel
+s dFuelMixer On 1
+j ra
+
+bStopMixFuel:
+s dFuelMixer On 0
+j ra</Instructions>
+</InstructionData>

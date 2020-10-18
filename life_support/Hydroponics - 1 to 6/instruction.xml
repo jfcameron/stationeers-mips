@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132432968057827990</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Hydroponics - 1 to 6</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Automated hydroponics ic
+# automatically plants and harvests 1 to 6 auto
+# hydroponic stations.
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# 1 - 6 Automated Hydroponics kit
+# hook up gas and chutes
+
+# === DEVICES ======================================
+alias dHydroponics0 d0
+alias dHydroponics1 d1
+alias dHydroponics2 d2
+alias dHydroponics3 d3
+alias dHydroponics4 d4
+alias dHydroponics5 d5
+
+# === CONSTANTS ====================================
+define cPlantSlot 0
+define cHarvestDelay 3
+
+# === PROGRAM ======================================
+bMainLoop:
+alias pCurrent dHydroponics0
+bdseal pCurrent bDoHydroponic
+
+alias pCurrent dHydroponics1
+bdseal pCurrent bDoHydroponic
+
+alias pCurrent dHydroponics2
+bdseal pCurrent bDoHydroponic
+
+alias pCurrent dHydroponics3
+bdseal pCurrent bDoHydroponic
+
+alias pCurrent dHydroponics4
+bdseal pCurrent bDoHydroponic
+
+alias pCurrent dHydroponics5
+bdseal pCurrent bDoHydroponic
+
+yield
+j bMainLoop
+
+bDoHydroponic:
+push ra
+
+s pCurrent On 1
+
+ls r0 pCurrent cPlantSlot Occupied
+beqal r0 0 bPlant
+
+ls r0 pCurrent cPlantSlot Mature
+beqal r0 1 bHarvest
+
+pop ra
+j ra
+
+bPlant:
+s pCurrent Plant 1
+j ra
+
+bHarvest:
+s pCurrent Harvest 1
+ls r0 pCurrent cPlantSlot Occupied
+beq r0 0 ra
+sleep cHarvestDelay # wait prevents bad state
+j bHarvest</Instructions>
+</InstructionData>

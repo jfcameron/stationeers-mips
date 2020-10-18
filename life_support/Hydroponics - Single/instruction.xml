@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132424415343190201</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Hydroponics - Single</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Automated hydroponics ic
+# automatically plants and harvests a single
+# auto hydro kit
+#
+# I dont recommend using this IC, an array
+# controller is more efficent. This is a reference
+# program.
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# Automated Hydroponics kit
+# hook up gas and chutes
+
+# === DEVICES ======================================
+alias dHydroponics d0
+
+# === CONSTANTS ====================================
+define cPlantSlot 0
+
+# === GLOBALS ======================================
+alias rImportCount r16
+alias rOccupied r15
+
+# === PROGRAM ======================================
+bMainLoop:
+l rImportCount dHydroponics ImportCount
+ls rOccupied dHydroponics cPlantSlot Occupied
+
+beqal rOccupied 0 bPlant
+
+ls r0 dHydroponics cPlantSlot Mature
+beqal r0 1 bHarvest
+
+yield
+j bMainLoop
+
+# === BRANCHING ====================================
+bPlant:
+s dHydroponics Plant 1
+j ra
+
+bHarvest:
+s dHydroponics Harvest 1
+ls r0 dHydroponics cPlantSlot Occupied
+beq r0 0 ra
+sleep 3 # need to delay to prevent weird bad state
+j bHarvest</Instructions>
+</InstructionData>

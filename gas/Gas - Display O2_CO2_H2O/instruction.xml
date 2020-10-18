@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132422706960412766</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Display O2_CO2_H2O</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># === DEVICES ======================================
+alias dOxygenIC d0
+alias dOxygenDisplay d1
+
+alias dCO2IC d2
+alias dCO2Display d3
+
+alias dWater d4
+alias dWaterDisplay d5
+
+# === PROGRAM ======================================
+bMainLoop:
+l r0 dOxygenIC Setting
+s dOxygenDisplay Color 6 # White
+s dOxygenDisplay Setting r0
+
+l r0 dCO2IC Setting
+s dCO2Display Color 1 # Grey
+s dCO2Display Setting r0
+
+l r0 dWater Setting
+s dWaterDisplay Color 0 # Blue
+s dWaterDisplay Setting r0
+
+yield
+j bMainLoop</Instructions>
+</InstructionData>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132418535432165882</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Hardsuit - Suit Storage</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Automatically charge battery, empty waste,
+# fill o2 and propellant of suit placed in storage
+
+# === BUILD INSTRUCTIONS ===========================
+# Suit storage
+# Housing for IC
+#
+# volume pump to waste out pipe
+#
+# pressure regulator from oxygen in pipe
+#  Set kpa to 1, switch it on
+# volume pump from oxygen in pipe
+#  Recommend set volume to 1
+#
+# pressure regulator from propellant in pipe
+#  Set kpa to 1, switch it on
+# volume pump from propellant in pipe
+#  Recommend set volume to 1
+
+# === EXPLANATION ==================================
+# Why pump and regulator for the o2 and prop lines?
+#
+# There is currently (Aug 2020) no way to determine
+# if a suit or backpack is missing its o2/prop cans:
+# they report 0 pressure if an empty can is present
+# and 0 pressure if no can is present.
+# This is extremely dangerous, as if you insert a
+# a suit/back missing its can, assume pressure is
+# reliable and turn on the pumps, the pipe
+# will burst.
+#
+# To detect whether or not a can is present, we
+# use regulators to guarantee that a small amount
+# of propellant and o2 are available for empty cans.
+# This means that 0 pressure will only ever
+# be reported if a can is not present. Therefore
+# if 0 is reported, the pumps are kept off.
+#
+# A pumpless implementation is possible, but
+# regulators are MUCH slower at building pressure.
+#
+# Increasing the volume setting on the pumps will
+# make the storage fill faster, but you run the risk
+# of overshooting the target pressure.
+# In practice, I find 1 is fast enough.
+
+# === DEVICES ======================================
+alias dSuitStorage d0
+alias dWasteOut d1 # Volume pump out
+alias dAirIn d2 # Volume pump in
+alias dPropellantIn d3 # Volume pump in
+
+# === CONSTANTS ====================================
+# Modify this value to fill smart cans
+# *always leave a safety margin
+# Gas Canister:     10132 max kpa
+# Smart Can:        20265 max kpa
+define cCanisterkPa 7000
+
+define cSuitSlot 1
+define cBackSlot 2
+
+# === GLOBALS ======================================
+alias rSuitIsInserted r15
+alias rBackIsInserted r14
+
+alias rSuitStorageOn r13
+alias rWastePumpOn r12
+alias rAirPumpOn r11
+alias rPropellantPumpOn r10
+
+# === PROGRAM ======================================
+MainLoop:
+ls rSuitIsInserted dSuitStorage cSuitSlot Occupied
+ls rBackIsInserted dSuitStorage cBackSlot Occupied
+
+move rSuitStorageOn 0
+ls r0 dSuitStorage cSuitSlot ChargeRatio
+bltal r0 0.999 bDoPowerStorage
+s dSuitStorage On rSuitStorageOn
+
+move rWastePumpOn 0
+ls r0 dSuitStorage cSuitSlot PressureWaste
+bgtal r0 0 bDoEmptyWasteCan
+s dWasteOut On rWastePumpOn
+
+move rAirPumpOn 0
+ls r0 dSuitStorage cSuitSlot PressureAir
+bltal r0 cCanisterkPa bDoFillAirCan
+s dAirIn On rAirPumpOn
+
+move rPropellantPumpOn 0
+ls r0 dSuitStorage cBackSlot Pressure
+bltal r0 cCanisterkPa bDoFillPropellantCan
+s dPropellantIn On rPropellantPumpOn
+
+yield
+j MainLoop
+
+# === BRANCHING ====================================
+bDoPowerStorage:
+beq rSuitIsInserted 0 ra
+move rSuitStorageOn 1
+j ra
+
+bDoEmptyWasteCan:
+beq rSuitIsInserted 0 ra
+move rWastePumpOn 1
+j ra
+
+bDoFillAirCan:
+beq rSuitIsInserted 0 ra
+beq r0 0 ra
+move rAirPumpOn 1
+j ra
+
+bDoFillPropellantCan:
+beq rBackIsInserted 0 ra
+beq r0 0 ra
+move rPropellantPumpOn 1
+j ra</Instructions>
+</InstructionData>

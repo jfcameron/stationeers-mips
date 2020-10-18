@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132413001282668807</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Power - Solar array</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Solar panel array controller.
+# Tested on Mars, Moon, Europa, Vulcan
+# === BUILD INSTRUCTIONS ===========================
+# Circuit layout:
+# S - W \
+# | + |   (Data ONLY out to Solar array)
+# H + W /
+#   |
+# (Power in)
+#
+# H: housing for the program
+# W: batch writer, input ic, out solar horizontal
+# W: batch writer, input ic, out solar vertical
+# S: day sensor
+# this can fit on a single frame.
+#
+# Day sensor orientation:
+# the sensor must be on the ground, screen up
+# point its power input south (180 on suit compass)
+#
+# Solar Panel orientation:
+# power must point east, 90deg on suit compass
+#
+# Panel Array orientation:
+# build a strip of panels, North (0) to South (180)
+# Panels E or W will cause panesl to block eachother
+# &amp; greatly reduce efficiency in morning &amp; evening.
+# a good idea to elevate the array too.
+#
+# === DEVICES ======================================
+alias dDaySensor d0 # Used to find sun orientation
+alias dWriteVertical d1 # Batch writer vertical val
+alias dWriteHorizonal d2 # Batch writer hor val
+
+# === PROGRAM ======================================
+MainLoop:
+# Calculate horizontal orientation
+alias vHorizontal r0
+
+s dDaySensor Mode 1
+sleep 1
+l vHorizontal dDaySensor SolarAngle
+
+mul vHorizontal vHorizontal -1
+
+# Write horizontal orientation
+s db Setting vHorizontal
+s dWriteHorizonal On 1
+yield
+s dWriteHorizonal On 0
+yield
+
+# Calculate vertical orientation
+alias vVertical r0
+
+s dDaySensor Mode 2
+sleep 1
+l vVertical dDaySensor SolarAngle # eulers
+
+div vVertical vVertical 180 # Convert eulers to
+mul vVertical vVertical 100 # input % (0-180 deg)
+# Mode 2 is angle formed between normal of sensor
+# and the sun, so would report "0%" as noon,
+# 50% at day break, so must -50 to compensate.
+sub vVertical 50 vVertical
+
+# Write vertical orientation
+s db Setting vVertical
+s dWriteVertical On 1
+yield
+s dWriteVertical On 0
+yield
+
+j MainLoop</Instructions>
+</InstructionData>

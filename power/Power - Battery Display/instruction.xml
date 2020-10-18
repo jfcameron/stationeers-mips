@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132439621365727555</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Power - Battery Display</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Displays averaged battery % and power actual
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# Batch reader (i/o kit)
+#  Input: Battery, Value: Charge, Mode: Average
+# Batch reader (i/o kit)
+#  Input: Battery, Value: Maximum, Mode: Average
+# Batch reader (i/o kit)
+#  Input: Battery, Value: PowerActual, Mode: Average
+
+# === DEVICES ======================================
+alias dChargeReader d0
+alias dMaximumReader d1
+alias dPowerActualReader d2
+alias dConsole d3
+
+# === CONSTANTS ====================================
+define cPercentageMode 1
+define cPowerMode 2
+define cSleepLength 2
+
+# === PROGRAM ======================================
+bMainLoop:
+l r0 dChargeReader Setting
+l r1 dMaximumReader Setting
+div r0 r0 r1
+s dConsole Mode cPercentageMode
+s dConsole Setting r0
+sleep cSleepLength
+
+l r0 dPowerActualReader Setting
+s dConsole Mode cPowerMode
+s dConsole Setting r0
+sleep cSleepLength
+j bMainLoop</Instructions>
+</InstructionData>

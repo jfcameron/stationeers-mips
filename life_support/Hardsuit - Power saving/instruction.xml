@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132416424156016180</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Hardsuit - Power saving</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Suit micromanager ic
+# Tested on Mars, Vulcan, Europa
+
+# === FEATURES =====================================
+# Turn off all systems when helmet visor is open.
+# Turn on air and filter if helmet is closed,
+# turn A/C on or off depending on the temperature.
+# Close and lock helmet under extreme temperature
+# conditions, to prevent accidentally destroying
+# your lungs on Europa or Vulcan
+
+# TODOs: I would like to micromanage air
+# based on internal pressure and gas mix,
+# Change A/C on/off to be based on internal temp
+# rather than external,
+# automatically flush if pollutants are present
+# in your suit, etc.,
+# however the required device variables are not
+# available in game as of 2020-08-11
+
+# === BUILD INSTRUCTIONS ===========================
+# Flash a chip and install it in your hardsuit
+
+# === DEVICES ======================================
+alias dHelmet d0 # needed to detect visor state
+
+# === CONSTANTS ====================================
+define cDefaultCelsius 25
+define cMinCelsius 5
+define cMaxCelsius 70
+define cExtremeCold -80 # close and lock low
+define cExtremeHeat 80 # close and lock high
+
+define cZeroCelsiusInKelvin 272.15
+
+# === GLOBALS ======================================
+alias rAirConditionerOn r15
+alias rFiltrationOn r14
+alias rAirOn r13
+alias rTargetCelsius r12
+alias rTargetPressure r11
+alias rHelmetLock r10
+alias rHelmetOpen r9
+
+# === PROGRAM ======================================
+MainLoop:
+move rTargetCelsius cDefaultCelsius
+move rAirConditionerOn 0
+move rFiltrationOn 1
+move rAirOn 1
+move rHelmetLock 0
+
+# React to helmet visor state
+l rHelmetOpen dHelmet Open
+beqal rHelmetOpen 1 bDoHelmetOpen
+
+# React to external temperature
+alias rExCelsius r0
+l rExCelsius db TemperatureExternal #kelvin
+sub rExCelsius rExCelsius cZeroCelsiusInKelvin #c
+
+# Air condition control
+bgtal rExCelsius cMaxCelsius bDoTempTooHigh
+bltal rExCelsius cMinCelsius bDoTempTooLow
+
+# Helmet close and lock safety if temp is extreme
+bgtal rExCelsius cExtremeHeat bDoHelmetLock
+bltal rExCelsius cExtremeCold bDoHelmetLock
+
+# External temperature reads wrong at extremely
+# low pressure (will report greater than 0, while
+# the game will treat it as zero and freeze you)
+alias rExKpa r0
+l rExKpa db PressureExternal
+bltal rExKpa 0.5 bDoLowPressureWorkaround
+
+# Enable/disable systems
+s db On rAirConditionerOn
+s db Filtration rFiltrationOn
+s db AirRelease rAirOn
+s dHelmet Lock rHelmetLock
+s dHelmet Open rHelmetOpen
+
+yield
+j MainLoop
+
+# === BRANCHING ====================================
+bDoHelmetOpen:
+move rAirConditionerOn 0
+move rFiltrationOn 0
+move rAirOn 0
+j ra
+
+bDoTempTooHigh:
+move rAirConditionerOn 1
+j ra
+
+bDoTempTooLow:
+move rAirConditionerOn 1
+j ra
+
+bDoLowPressureWorkaround:
+move rAirConditionerOn 1
+j ra
+
+bDoHelmetLock:
+move rHelmetOpen 0
+move rHelmetLock 1
+j ra</Instructions>
+</InstructionData>

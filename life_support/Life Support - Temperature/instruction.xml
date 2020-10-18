@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132387070877614237</DateTime>
+  <GameVersion>0.2.2445.11152</GameVersion>
+  <Title>Life Support - Temperature</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Written by Guarbones, 2020/07/07
+# batched Life Support temperature control chip
+# Tested on Moon, Mars, Europa, Vulcan
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# Batch writer, for wall coolers
+#   Input: Housing
+#   Output Type: Wall Cooler
+#   Output var: On
+# Gas sensor
+# Optional:
+# Batch writer, for heaters
+#   Input: Housing
+#   Output Type: Wall Heater
+#   Output var: On
+# CoolantAnalyzer, to shut off coolers if coolant
+# gas is too hot
+
+# === EXPLANATION ==================================
+# Cooling is the only required component of an A/C
+# system because stations tend to heat up:
+# plants produce heat,
+# gas behind glass walls exposed to the sun produce
+# heat.
+#
+# CoolantAnalyzer forces the coolers off if the
+# radiator line is too hot to pull heat out of the
+# habitat.
+# this is only important in scenarios
+# where the radiator line is routinely overheated
+# due to atmospheric conditions.
+# As of 2020 August, this only occurs on Vulcan.
+#
+# Heaters are only important in edge cases: for
+# example if you pressurize a new section of your
+# station and the gases you pump in to maintain
+# gas mix/kpa are cold enough to kill your plants.
+#
+# When it comes to bootstrapping a habitat in a cold
+# environment (i.e: Europa), use the flares provided
+# from your lander.
+
+# === DEVICES ======================================
+alias dGasSensor d0
+alias dWriteCooler d1 # Cooler batch writer
+alias dWriteHeater d2 # Heater batch writer
+alias dCoolantAnalyzer d3
+
+# === CONSTANTS ====================================
+# Feel free to modify these
+define cTemperatureLow 17 #Celsius
+define cTemperatureHigh 30 #Celsius
+define cCoolantMaxCelsius 215
+
+define cZeroCelsiusInKelvin 273.15
+
+# === GLOBALS ======================================
+alias rCoolerOn r15
+alias rHeaterOn r14
+
+# === PROGRAM ======================================
+MainLoop:
+move rCoolerOn 0
+move rHeaterOn 0
+
+l r0 dGasSensor Temperature
+sub r0 r0 cZeroCelsiusInKelvin
+
+bgtal r0 cTemperatureHigh bCoolerOn
+bltal r0 cTemperatureLow bHeaterOn
+
+brdns dCoolantAnalyzer 4
+l r1 dCoolantAnalyzer Temperature
+sub r1 r1 cZeroCelsiusInKelvin
+bgeal r1 cCoolantMaxCelsius bCoolerOff
+
+move r0 rCoolerOn
+jal fSetCooler
+
+move r0 rHeaterOn
+jal fSetHeater
+
+yield
+j MainLoop
+
+# === BRANCHING ====================================
+bCoolerOn:
+move rCoolerOn 1
+j ra
+
+bCoolerOff:
+move rCoolerOn 0
+j ra
+
+bHeaterOn:
+move rHeaterOn 1
+j ra
+
+# === FUNCTIONS ====================================
+# r0 is value
+fSetCooler:
+s db Setting r0
+s dWriteCooler On 1
+yield
+s dWriteCooler On 0
+yield
+j ra
+
+fSetHeater:
+bdns dWriteHeater ra
+s db Setting r0
+s dWriteHeater On 1
+yield
+s dWriteHeater On 0
+yield
+j ra</Instructions>
+</InstructionData>

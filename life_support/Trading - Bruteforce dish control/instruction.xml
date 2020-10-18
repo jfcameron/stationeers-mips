@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132423483431224770</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Trading - Bruteforce dish control</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># PREVENT RECONNECTION W SIGNALID
+# Brute force satellite dish controller
+#
+# iterates all possible dish orientations,
+# stops when a signal is strong enough for a user
+# to determine if the object is a satellite or
+# trade ship.
+# when user has finished intervening, press button
+# to continue scanning behaviour
+#
+# to speed up the process, add multiple dishes and
+# adjust vertical constants, so each dish + ic
+# covers a different part of the sky
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for the IC
+# Satellite dish
+# Button
+# Alarm
+# flashing light
+
+# === DEVICES ======================================
+alias dDish d0
+alias dSkipBtn d1
+alias dWaitingIndicator d2
+alias dWaitingIndicator2 d3
+
+# === CONSTANTS ====================================
+define cHorizMin 3
+define cHorizMax 357
+define cVertMin 10 # change these values as you
+define cVertMax 88 # add more dishes and ICs
+define cRequiredStren 0.95
+define cScanState 0
+define cDisconnectState 1
+
+# === GLOBALS ======================================
+alias rHoriz r16
+alias rVert r15
+alias rSignalStren r13
+alias rHorizDelta r12
+alias rVertDelta r11
+alias rState r10
+alias rLastID r9
+
+# === PROGRAM ======================================
+s dDish Horizontal cHorizMin
+s dDish Vertical cVertMin
+sleep 20
+
+move rHorizDelta 1
+move rVertDelta 2
+move rState cScanState
+
+MainLoop:
+s db Setting rVert
+
+s dWaitingIndicator On 0
+s dWaitingIndicator2 On 0
+
+l rHoriz dDish Horizontal
+l rVert dDish Vertical
+
+bgeal rVert cVertMax bDoNegativeVertDelta
+bleal rVert cVertMin bDoPositiveVertDelta
+
+bgeal rHoriz cHorizMax bDoNegativeDelta
+bleal rHoriz cHorizMin bDoPositiveDelta
+
+add rHoriz rHoriz rHorizDelta
+
+s dDish Horizontal rHoriz
+s dDish Vertical rVert
+
+l rSignalStren dDish SignalStrength
+
+beqal rState cScanState bDoScan
+beqal rState cDisconnectState bDoDisconnect
+
+j MainLoop
+
+# === BRANCHING ====================================
+bDoScan:
+bge rSignalStren cRequiredStren bDoContacted
+j ra
+
+bDoDisconnect:
+blt rSignalStren cRequiredStren bGoToScanState
+j ra
+
+bGoToScanState:
+move rState cScanState
+j MainLoop
+
+bDoNegativeVertDelta:
+move rVertDelta -2
+j ra
+
+bDoPositiveVertDelta:
+move rVertDelta 2
+j ra
+
+bDoNegativeDelta:
+move rHorizDelta -1
+add rVert rVert rVertDelta
+j ra
+
+bDoPositiveDelta:
+move rHorizDelta 1
+add rVert rVert rVertDelta
+j ra
+
+bDoContacted: #loop
+#l r0 dDish SignalID
+#beq r0 rLastID MainLoop
+
+l rLastID dDish SignalID
+s db Setting 1
+s dWaitingIndicator On 1
+s dWaitingIndicator2 On 1
+move rState cDisconnectState
+l r0 dSkipBtn Setting
+beq r0 1 MainLoop
+yield
+j bDoContacted</Instructions>
+</InstructionData>

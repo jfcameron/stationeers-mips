@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132424169556726263</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Canister Input</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Pumps canisters into your waste gas system
+# The pump is only active while the canisters
+# have gas in them
+# Supports 1 - 5 cans at once
+#
+# Useful for dealing with the gas trader
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# volume pump
+# 1 to 5 kit canister storage
+#
+# Set the pump vol to whatever setting you want.
+# keep in mind it pulls more power the higher the
+# setting
+#
+# *If you are using more than one canister storage,
+# I recommend adding an unpowered regulator between
+# each can storage and the pump. This prevents
+# cans from equalizing with each other, which
+# makes you have to wait until all cans have been
+# emptied, rather than until the lowest pressure
+# can has been emptied. A little time saver if you
+# are emptying more cans than you have can storages
+
+# === DEVICES ======================================
+alias dPump d0
+alias dTankFill1 d1
+alias dTankFill2 d2
+alias dTankFill3 d3
+alias dTankFill4 d4
+alias dTankFill5 d5
+
+# === GLOBALS ======================================
+alias rPumpOn r15
+
+# === PROGRAM ======================================
+bMainLoop:
+move rPumpOn 0
+
+alias pCurrent dTankFill1
+jal bDoCanister
+
+brdns dTankFill2 3
+alias pCurrent dTankFill2
+jal bDoCanister
+
+brdns dTankFill3 3
+alias pCurrent dTankFill3
+jal bDoCanister
+
+brdns dTankFill4 3
+alias pCurrent dTankFill4
+jal bDoCanister
+
+brdns dTankFill5 3
+alias pCurrent dTankFill5
+jal bDoCanister
+
+s dPump On rPumpOn
+
+yield
+j bMainLoop
+
+# === BRANCHING ====================================
+bDoCanister:
+push ra
+
+l r0 pCurrent Pressure
+bgtal r0 0 bTurnOnPump
+
+pop ra
+j ra
+
+bTurnOnPump:
+move rPumpOn 1
+j ra</Instructions>
+</InstructionData>

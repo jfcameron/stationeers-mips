@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132432822921088681</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Gas - Waste reservoir</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Waste (unfiltered) gas management
+# 1: Prevents overpressurizing of your unfiltered
+# gas line/reservoir.
+#
+# 2: keeps small amounts of atmospheric gas in
+# waste tank, to allow a filtering system to
+# make use of them. CO2 on Vulcan, for example.
+#
+# *2 requires an atmosphere and must be configured.
+# See BEGIN USER CONFIG section below.
+
+# === BUILD INSTRUCTIONS ===========================
+# Housing for IC
+# a tank kit connected to your waste line
+# program configuration below (if atmo is present)
+
+# === DEVICES ======================================
+alias dWasteTank d0
+alias dActiveVent d1
+
+# === CONSTANTS ====================================
+define cOutwardMode 0
+define cInwardMode 1
+define cMaxPressure 30000
+
+# === GLOBALS ======================================
+alias rVentOn r15
+alias rVentMode r14
+
+# === PROGRAM =====================================
+bMainLoop:
+move rVentOn 0
+
+# !!! BEGIN USER CONFIG !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Uncomment these to match planet's atmosphere.
+# Uncomment nothing if no atmo is present.
+#l r0 dWasteTank RatioCarbonDioxide
+#bleal r0 0 bPullAtmoIn
+
+#l r0 dWasteTank RatioNitrogen
+#bleal r0 0 bPullAtmoIn
+
+#l r0 dWasteTank RatioNitrousOxide
+#bleal r0 0 bPullAtmoIn
+
+#l r0 dWasteTank RatioOxygen
+#bleal r0 0 bPullAtmoIn
+
+#l r0 dWasteTank RatioPollutant
+#bleal r0 0 bPullAtmoIn
+
+#l r0 dWasteTank RatioVolatiles
+#bleal r0 0 bPullAtmoIn
+# !!! END OF USER CONFIG !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+l r0 dWasteTank Pressure
+bleal r0 cMaxPressure bPushWasteToAtmo
+
+s dActiveVent Mode rVentMode
+s dActiveVent On rVentOn
+
+yield
+j bMainLoop
+
+# === BRANCHING ====================================
+bPullAtmoIn:
+move rVentOn 1
+move rVentMode cInwardMode
+j ra
+
+bPushWasteToAtmo:
+move rVentOn 1
+move rVentMode cOutwardMode
+j ra</Instructions>
+</InstructionData>

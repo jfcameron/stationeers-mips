@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132434466567951823</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Smelting - Vulcan Furnace</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># Uses Vulcan's atmosphere to keep an
+# advanced furnace hot enough to smelt most
+# ores anytime during the day
+
+# === BUILD INSTRUCTIONS ===========================
+# Advanced furnace
+# Housing for IC
+# Passive vent to atmo + pipes into furnace input
+# pipe either to atmo or a waste system in output
+#
+# *If you connect output to a waste system, I
+# recommend you have an IC that prevents waste
+# overpressurization, as the furnace will slowly
+# build waste pressure
+ 
+# === DEVICES ======================================
+alias dAdvFurnace d0
+alias dAtmoGasSensor d1
+
+# === CONSTANTS ====================================
+define cMaxKpa 10000
+
+# === GLOBALS ======================================
+alias rInput r15
+alias rOutput r14
+
+# === PROGRAM ======================================
+bMainLoop:
+move rInput 0
+move rOutput 0
+
+l r0 dAdvFurnace Pressure
+bgtal r0 cMaxKpa bReduceKpa
+
+l r0 dAdvFurnace Temperature
+l r1 dAtmoGasSensor Temperature
+bltal r0 r1 bPumpAtmoIn
+
+s dAdvFurnace SettingInput rInput
+s dAdvFurnace SettingOutput rOutput
+
+sleep 10
+j bMainLoop
+
+bReduceKpa:
+move rInput 0
+move rOutput 100
+j ra
+
+bPumpAtmoIn:
+move rInput 100
+move rOutput 5
+j ra</Instructions>
+</InstructionData>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstructionData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DateTime>132416597758027669</DateTime>
+  <GameVersion>0.2.2502.11509</GameVersion>
+  <Title>Smelting - Arc Furnace</Title>
+  <Description />
+  <Author>Guarbones</Author>
+  <WorkshopFileHandle>0</WorkshopFileHandle>
+  <Instructions># === FEATURES =====================================
+# Automatically runs an arc furnace and captures
+# gas produced from smelting
+#
+# Note: I find arc furnace automation very buggy
+# This program is meant to be as simple as possible,
+# but I find that every few real life days I have to
+# deconstruct and reconstruct the furnace to get it
+# out of a bad state.
+# The states Ive seen: furnace is smelting the same
+# ore indefinitely.
+# furnace turns itself off when it tries to activate
+# and will not turn back on
+# The fix is simply to reconstruct it
+
+# === BUILD INSTRUCTIONS ===========================
+# create a 1x1x1 chamber.
+# inside place:
+# arc furnace
+# gas sensor
+# active vent, connected to a gas system
+# run chutes to the input and output of the furnace
+# the more chutes used for input, the more work can
+# be queued
+
+# === DEVICES ======================================
+alias dArcFurnace d0
+alias dGasSensor d1
+alias dActiveVent d2
+
+# === GLOBALS ======================================
+alias rActiveVentOn r15
+
+# === PROGRAM ======================================
+s dArcFurnace On 1
+
+MainLoop:
+# Pull gas from smelting into the gas system
+move rActiveVentOn 0
+l r0 dGasSensor Pressure
+bgtal r0 0 bDoDepressurize
+s dActiveVent Mode 1
+s dActiveVent On rActiveVentOn
+
+# Work the furnace
+s dArcFurnace Activate 1
+sleep 10
+
+j MainLoop
+
+# === BRANCHING ====================================
+bDoDepressurize:
+move rActiveVentOn 1
+j ra</Instructions>
+</InstructionData>
